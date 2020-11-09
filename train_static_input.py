@@ -62,8 +62,6 @@ def main(config_path):
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                            lr=cfg['TRAIN']['LR'], weight_decay=cfg['TRAIN']['WEIGHT_DECAY'])
-    correct = 0
-    num_data = 0
     for epoch in range(cfg['TRAIN']['NUM_EPOCH'] + 1):
         model.train()
         for i, data in enumerate(train_dataloader):
@@ -83,6 +81,9 @@ def main(config_path):
 
             check_timing = np.random.randint(-5, 0)
             loss = torch.nn.MSELoss()(output[:, check_timing], target)
+            if 'FIXED_DURATION' in cfg['DATALOADER']:
+                for j in range(1, cfg['DATALOADER']['FIXED_DURATION'] + 1):
+                    loss += torch.nn.MSELoss()(output[:, check_timing - j], target)
             dummy_zero = torch.zeros([cfg['TRAIN']['BATCHSIZE'],
                                       cfg['DATALOADER']['TIME_LENGTH'] + 1,
                                       cfg['MODEL']['SIZE']]).float().to(device)
