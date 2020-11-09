@@ -35,8 +35,9 @@ class RecurrentNeuralNetwork(nn.Module):
     def make_neural_noise(self, hidden, alpha):
         return torch.randn_like(hidden).to(self.device) * self.sigma_neu * torch.sqrt(alpha)
 
-    def forward(self, input_signal, hidden, length):
+    def forward(self, input_signal, hidden):
         num_batch = input_signal.size(0)
+        length = input_signal.size(1)
         hidden_list = torch.zeros(length, num_batch, self.n_hid).type_as(input_signal.data)
         output_list = torch.zeros(length, num_batch, self.n_out).type_as(input_signal.data)
 

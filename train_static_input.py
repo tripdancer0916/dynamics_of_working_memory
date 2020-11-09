@@ -39,7 +39,7 @@ def main(config_path):
     device = torch.device('cuda' if use_cuda else 'cpu')
     print(device)
 
-    model = RecurrentNeuralNetwork(n_in=1, n_out=2, n_hid=cfg['MODEL']['SIZE'], device=device,
+    model = RecurrentNeuralNetwork(n_in=1, n_out=1, n_hid=cfg['MODEL']['SIZE'], device=device,
                                    alpha_time_scale=cfg['MODEL']['ALPHA'],
                                    activation=cfg['MODEL']['ACTIVATION'],
                                    sigma_neu=cfg['MODEL']['SIGMA_NEU'],
@@ -51,15 +51,14 @@ def main(config_path):
                                 value_max=cfg['DATALOADER']['VALUE_MAX'],
                                 signal_length=cfg['DATALOADER']['SIGNAL_LENGTH'],
                                 variable_signal_length=cfg['DATALOADER']['VARIABLE_SIGNAL_LENGTH'],
-                                sigma_in=cfg['DATALOADER']['SIGMA_IN'],
-                                delay_variable=cfg['DATALOADER']['VARIABLE_DELAY'])
+                                sigma_in=cfg['DATALOADER']['SIGMA_IN'])
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg['TRAIN']['BATCHSIZE'],
                                                    num_workers=2, shuffle=True,
                                                    worker_init_fn=lambda x: np.random.seed())
 
     print(model)
-    print('Epoch Loss Acc')
+    print('Epoch Loss')
 
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                            lr=cfg['TRAIN']['LR'], weight_decay=cfg['TRAIN']['WEIGHT_DECAY'])
@@ -70,7 +69,7 @@ def main(config_path):
         for i, data in enumerate(train_dataloader):
             inputs, target = data
             # print(inputs.shape)
-            inputs, target = inputs.float(), target.long()
+            inputs, target = inputs.float(), target.float()
             inputs, target = Variable(inputs).to(device), Variable(target).to(device)
 
             # hidden = torch.zeros(cfg['TRAIN']['BATCHSIZE'], cfg['MODEL']['SIZE'])
@@ -80,7 +79,7 @@ def main(config_path):
 
             optimizer.zero_grad()
             hidden = hidden.detach()
-            hidden_list, output, hidden, new_j = model(inputs, hidden)
+            hidden_list, output, hidden = model(inputs, hidden)
 
             check_timing = np.random.randint(-5, 0)
             loss = torch.nn.MSELoss()(output[:, check_timing], target)
@@ -92,15 +91,11 @@ def main(config_path):
             loss += cfg['TRAIN']['ACTIVATION_LAMBDA'] * active_norm
             loss.backward()
             optimizer.step()
-            correct += (np.argmax(output[:, -1].cpu().detach().numpy(),
-                                  axis=1) == target.cpu().detach().numpy()).sum().item()
-            num_data += target.cpu().detach().numpy().shape[0]
 
         if epoch % cfg['TRAIN']['DISPLAY_EPOCH'] == 0:
-            acc = correct / num_data
-            print(f'{epoch}, {loss.item():.4f}, {acc:.4f}')
-            correct = 0
-            num_data = 0
+            print(f'{epoch}, {loss.item():.4f}')
+            print('output: ', output[0, -5:, 0].cpu().detach().numpy())
+            print('target: ', target[0, 0].cpu().detach().numpy())
         if epoch > 0 and epoch % cfg['TRAIN']['NUM_SAVE_EPOCH'] == 0:
             torch.save(model.state_dict(), os.path.join(save_path, f'epoch_{epoch}.pth'))
 
