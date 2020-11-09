@@ -98,7 +98,8 @@ def main(config_path):
 
         if epoch % cfg['TRAIN']['DISPLAY_EPOCH'] == 0:
             print(f'{epoch}, {loss.item():.4f}')
-            print('output: ', output[0, check_timing:, 0].cpu().detach().numpy())
+            print('output: ',
+                  output[0, check_timing - cfg['DATALOADER']['FIXED_DURATION']: check_timing, 0].cpu().detach().numpy())
             print('target: ', target[0, 0].cpu().detach().numpy())
         if epoch > 0 and epoch % cfg['TRAIN']['NUM_SAVE_EPOCH'] == 0:
             torch.save(model.state_dict(), os.path.join(save_path, f'epoch_{epoch}.pth'))
