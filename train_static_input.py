@@ -23,6 +23,9 @@ def main(config_path):
     with open(config_path, 'r') as f:
         cfg = yaml.safe_load(f)
 
+    if 'CHECK_TIMING' not in cfg['DATALOADER']:
+        cfg['DATALOADER']['CHECKTIMING'] = 5
+
     model_name = os.path.splitext(os.path.basename(config_path))[0]
 
     # save path
@@ -79,7 +82,7 @@ def main(config_path):
             hidden = hidden.detach()
             hidden_list, output, hidden = model(inputs, hidden)
 
-            check_timing = np.random.randint(-5, 0)
+            check_timing = np.random.randint(-cfg['DATALOADER']['CHECK_TIMING'], 0)
             loss = torch.nn.MSELoss()(output[:, check_timing], target)
             if 'FIXED_DURATION' in cfg['DATALOADER']:
                 for j in range(1, cfg['DATALOADER']['FIXED_DURATION'] + 1):
