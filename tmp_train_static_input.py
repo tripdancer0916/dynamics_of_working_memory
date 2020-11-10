@@ -66,7 +66,7 @@ def main(config_path):
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                            lr=cfg['TRAIN']['LR'], weight_decay=cfg['TRAIN']['WEIGHT_DECAY'])
     for epoch in range(cfg['TRAIN']['NUM_EPOCH'] + 1):
-        if epoch == 50:
+        if epoch == 500:
             cfg['DATALOADER']['TIME_LENGTH'] += 100
             train_dataset = StaticInput(time_length=cfg['DATALOADER']['TIME_LENGTH'],
                                         time_scale=cfg['MODEL']['ALPHA'],
@@ -108,7 +108,7 @@ def main(config_path):
             #                           cfg['MODEL']['SIZE']]).float().to(device)
             # active_norm = torch.nn.MSELoss()(hidden_list, dummy_zero)
 
-            loss += cfg['TRAIN']['ACTIVATION_LAMBDA'] * active_norm
+            # loss += cfg['TRAIN']['ACTIVATION_LAMBDA'] * active_norm
             loss.backward()
             optimizer.step()
 
