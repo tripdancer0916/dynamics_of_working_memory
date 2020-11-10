@@ -37,7 +37,7 @@ class FreqInput(data.Dataset):
             t = t[:-1]
         # phase_shift = np.random.rand() * np.pi
         # signal_ = np.sin(signal_freq * t + phase_shift)
-        signal_ = np.sin(signal_freq)
+        signal_ = np.sin(signal_freq * t)
         signal[signal_timing: signal_timing + signal_length] = signal_
         signal += np.random.normal(0, self.sigma_in, self.time_length + 1)
 
