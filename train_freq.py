@@ -30,8 +30,8 @@ def main(config_path):
 
     # save path
     os.makedirs('trained_model', exist_ok=True)
-    os.makedirs('trained_model/static_input', exist_ok=True)
-    save_path = f'trained_model/static_input/{model_name}'
+    os.makedirs('trained_model/freq', exist_ok=True)
+    save_path = f'trained_model/freq/{model_name}'
     os.makedirs(save_path, exist_ok=True)
 
     # copy config file
