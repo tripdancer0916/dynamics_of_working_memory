@@ -66,6 +66,19 @@ def main(config_path):
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                            lr=cfg['TRAIN']['LR'], weight_decay=cfg['TRAIN']['WEIGHT_DECAY'])
     for epoch in range(cfg['TRAIN']['NUM_EPOCH'] + 1):
+        if epoch == 500:
+            train_dataset = StaticInput(time_length=cfg['DATALOADER']['TIME_LENGTH'] + 100,
+                                        time_scale=cfg['MODEL']['ALPHA'],
+                                        value_min=cfg['DATALOADER']['VALUE_MIN'],
+                                        value_max=cfg['DATALOADER']['VALUE_MAX'],
+                                        signal_length=cfg['DATALOADER']['SIGNAL_LENGTH'],
+                                        variable_signal_length=cfg['DATALOADER']['VARIABLE_SIGNAL_LENGTH'],
+                                        sigma_in=cfg['DATALOADER']['SIGMA_IN'])
+
+            train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg['TRAIN']['BATCHSIZE'],
+                                                           num_workers=2, shuffle=True,
+                                                           worker_init_fn=lambda x: np.random.seed())
+            cfg['DATALOADER']['FIXED_DURATION'] += 50
         model.train()
         for i, data in enumerate(train_dataloader):
             inputs, target = data
