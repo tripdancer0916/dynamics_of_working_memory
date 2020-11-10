@@ -66,8 +66,9 @@ def main(config_path):
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                            lr=cfg['TRAIN']['LR'], weight_decay=cfg['TRAIN']['WEIGHT_DECAY'])
     for epoch in range(cfg['TRAIN']['NUM_EPOCH'] + 1):
-        if epoch == 500:
-            train_dataset = StaticInput(time_length=cfg['DATALOADER']['TIME_LENGTH'] + 100,
+        if epoch == 50:
+            cfg['DATALOADER']['TIME_LENGTH'] += 100
+            train_dataset = StaticInput(time_length=cfg['DATALOADER']['TIME_LENGTH'],
                                         time_scale=cfg['MODEL']['ALPHA'],
                                         value_min=cfg['DATALOADER']['VALUE_MIN'],
                                         value_max=cfg['DATALOADER']['VALUE_MAX'],
@@ -102,10 +103,10 @@ def main(config_path):
             if 'FIXED_DURATION' in cfg['DATALOADER']:
                 for j in range(1, cfg['DATALOADER']['FIXED_DURATION'] + 1):
                     loss += torch.nn.MSELoss()(hidden_list[:, check_timing - j], hidden_list[:, check_timing])
-            dummy_zero = torch.zeros([cfg['TRAIN']['BATCHSIZE'],
-                                      cfg['DATALOADER']['TIME_LENGTH'] + 1,
-                                      cfg['MODEL']['SIZE']]).float().to(device)
-            active_norm = torch.nn.MSELoss()(hidden_list, dummy_zero)
+            # dummy_zero = torch.zeros([cfg['TRAIN']['BATCHSIZE'],
+            #                           cfg['DATALOADER']['TIME_LENGTH'] + 1,
+            #                           cfg['MODEL']['SIZE']]).float().to(device)
+            # active_norm = torch.nn.MSELoss()(hidden_list, dummy_zero)
 
             loss += cfg['TRAIN']['ACTIVATION_LAMBDA'] * active_norm
             loss.backward()
